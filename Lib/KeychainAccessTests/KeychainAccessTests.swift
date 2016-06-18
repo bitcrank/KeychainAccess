@@ -231,13 +231,13 @@ class KeychainAccessTests: XCTestCase {
             let keychain = Keychain(server: server, protocolType: .https)
             XCTAssertEqual(keychain.server, URL)
             XCTAssertEqual(keychain.protocolType, ProtocolType.https)
-            XCTAssertEqual(keychain.authenticationType, AuthenticationType.default)
+            XCTAssertEqual(keychain.authenticationType, AuthenticationType.defaultType)
         }
         do {
             let keychain = Keychain(server: URL, protocolType: .https)
             XCTAssertEqual(keychain.server, URL)
             XCTAssertEqual(keychain.protocolType, ProtocolType.https)
-            XCTAssertEqual(keychain.authenticationType, AuthenticationType.default)
+            XCTAssertEqual(keychain.authenticationType, AuthenticationType.defaultType)
         }
     }
     
@@ -405,10 +405,10 @@ class KeychainAccessTests: XCTestCase {
 
         let length = 256
         let data = NSMutableData(length: length)!
-        SecRandomCopyBytes(kSecRandomDefault, length, UnsafeMutablePointer<UInt8>(data.mutableBytes))
+        _ = SecRandomCopyBytes(kSecRandomDefault, length, UnsafeMutablePointer<UInt8>(data.mutableBytes))
 
         do {
-            try keychain.set(data, key: "RandomData")
+            try keychain.set(data as Data, key: "RandomData")
             let _ = try keychain.getString("RandomData")
         } catch let error as NSError {
             XCTAssertEqual(error.domain, KeychainAccessErrorDomain)
@@ -453,7 +453,7 @@ class KeychainAccessTests: XCTestCase {
 
             let keychain = Keychain(service: "Twitter")
                 .attributes(attributes)
-                .accessibility(.WhenPasscodeSetThisDeviceOnly, authenticationPolicy: .UserPresence)
+                .accessibility(.whenPasscodeSetThisDeviceOnly, authenticationPolicy: .UserPresence)
 
             XCTAssertNil(keychain["kishikawakatsumi"], "not stored password")
 
@@ -469,11 +469,11 @@ class KeychainAccessTests: XCTestCase {
 
             do {
                 let attributes = try keychain.get("kishikawakatsumi") { $0 }
-                XCTAssertEqual(attributes?.`class`, ItemClass.GenericPassword.rawValue)
-                XCTAssertEqual(attributes?.data, "password1234".dataUsingEncoding(NSUTF8StringEncoding))
+                XCTAssertEqual(attributes?.`class`, ItemClass.genericPassword.rawValue)
+                XCTAssertEqual(attributes?.data, "password1234".data(using: String.Encoding.utf8))
                 XCTAssertNil(attributes?.ref)
                 XCTAssertNotNil(attributes?.persistentRef)
-                XCTAssertEqual(attributes?.accessible, Accessibility.WhenPasscodeSetThisDeviceOnly.rawValue)
+                XCTAssertEqual(attributes?.accessible, Accessibility.whenPasscodeSetThisDeviceOnly.rawValue)
                 XCTAssertNotNil(attributes?.accessControl)
                 XCTAssertEqual(attributes?.accessGroup, "")
                 XCTAssertNotNil(attributes?.synchronizable)
@@ -496,8 +496,8 @@ class KeychainAccessTests: XCTestCase {
                 XCTAssertNil(attributes?.port)
                 XCTAssertNil(attributes?.path)
 
-                XCTAssertEqual(attributes![String(kSecClass)] as? String, ItemClass.GenericPassword.rawValue)
-                XCTAssertEqual(attributes![String(kSecValueData)] as? NSData, "password1234".dataUsingEncoding(NSUTF8StringEncoding))
+                XCTAssertEqual(attributes![String(kSecClass)] as? String, ItemClass.genericPassword.rawValue)
+                XCTAssertEqual(attributes![String(kSecValueData)] as? NSData, "password1234".data(using: String.Encoding.utf8))
             } catch {
                 XCTFail("error occurred")
             }
@@ -514,7 +514,7 @@ class KeychainAccessTests: XCTestCase {
             attributes[String(kSecAttrIsNegative)] = true
             attributes[String(kSecAttrSecurityDomain)] = "securitydomain"
 
-            let keychain = Keychain(server: NSURL(string: "https://example.com:443/api/login/")!, protocolType: .HTTPS)
+            let keychain = Keychain(server: URL(string: "https://example.com:443/api/login/")!, protocolType: .https)
                 .attributes(attributes)
 
             XCTAssertNil(keychain["kishikawakatsumi"], "not stored password")
@@ -531,11 +531,11 @@ class KeychainAccessTests: XCTestCase {
                 XCTAssertEqual(keychain["kishikawakatsumi"], "password1234", "stored password")
 
                 let attributes = try keychain.get("kishikawakatsumi") { $0 }
-                XCTAssertEqual(attributes?.`class`, ItemClass.InternetPassword.rawValue)
-                XCTAssertEqual(attributes?.data, "password1234".dataUsingEncoding(NSUTF8StringEncoding))
+                XCTAssertEqual(attributes?.`class`, ItemClass.internetPassword.rawValue)
+                XCTAssertEqual(attributes?.data, "password1234".data(using: String.Encoding.utf8))
                 XCTAssertNil(attributes?.ref)
                 XCTAssertNotNil(attributes?.persistentRef)
-                XCTAssertEqual(attributes?.accessible, Accessibility.AfterFirstUnlock.rawValue)
+                XCTAssertEqual(attributes?.accessible, Accessibility.afterFirstUnlock.rawValue)
                 if #available(iOS 9.0, *) {
                     XCTAssertNil(attributes?.accessControl)
                 } else {
@@ -557,15 +557,15 @@ class KeychainAccessTests: XCTestCase {
                 XCTAssertNil(attributes?.generic)
                 XCTAssertEqual(attributes?.securityDomain, "securitydomain")
                 XCTAssertEqual(attributes?.server, "example.com")
-                XCTAssertEqual(attributes?.`protocol`, ProtocolType.HTTPS.rawValue)
-                XCTAssertEqual(attributes?.authenticationType, AuthenticationType.Default.rawValue)
+                XCTAssertEqual(attributes?.`protocol`, ProtocolType.https.rawValue)
+                XCTAssertEqual(attributes?.authenticationType, AuthenticationType.defaultType.rawValue)
                 XCTAssertEqual(attributes?.port, 443)
                 XCTAssertEqual(attributes?.path, "")
             } catch {
                 XCTFail("error occurred")
             }
             do {
-                let keychain = Keychain(server: NSURL(string: "https://example.com:443/api/login/")!, protocolType: .HTTPS)
+                let keychain = Keychain(server: URL(string: "https://example.com:443/api/login/")!, protocolType: .https)
 
                 XCTAssertEqual(keychain["kishikawakatsumi"], "password1234", "stored password")
 
@@ -573,11 +573,11 @@ class KeychainAccessTests: XCTestCase {
                 XCTAssertEqual(keychain["kishikawakatsumi"], "1234password", "updated password")
 
                 let attributes = try keychain.get("kishikawakatsumi") { $0 }
-                XCTAssertEqual(attributes?.`class`, ItemClass.InternetPassword.rawValue)
-                XCTAssertEqual(attributes?.data, "1234password".dataUsingEncoding(NSUTF8StringEncoding))
+                XCTAssertEqual(attributes?.`class`, ItemClass.internetPassword.rawValue)
+                XCTAssertEqual(attributes?.data, "1234password".data(using: String.Encoding.utf8))
                 XCTAssertNil(attributes?.ref)
                 XCTAssertNotNil(attributes?.persistentRef)
-                XCTAssertEqual(attributes?.accessible, Accessibility.AfterFirstUnlock.rawValue)
+                XCTAssertEqual(attributes?.accessible, Accessibility.afterFirstUnlock.rawValue)
                 if #available(iOS 9.0, *) {
                     XCTAssertNil(attributes?.accessControl)
                 } else {
@@ -599,15 +599,15 @@ class KeychainAccessTests: XCTestCase {
                 XCTAssertNil(attributes?.generic)
                 XCTAssertEqual(attributes?.securityDomain, "securitydomain")
                 XCTAssertEqual(attributes?.server, "example.com")
-                XCTAssertEqual(attributes?.`protocol`, ProtocolType.HTTPS.rawValue)
-                XCTAssertEqual(attributes?.authenticationType, AuthenticationType.Default.rawValue)
+                XCTAssertEqual(attributes?.`protocol`, ProtocolType.https.rawValue)
+                XCTAssertEqual(attributes?.authenticationType, AuthenticationType.defaultType.rawValue)
                 XCTAssertEqual(attributes?.port, 443)
                 XCTAssertEqual(attributes?.path, "")
             } catch {
                 XCTFail("error occurred")
             }
             do {
-                let keychain = Keychain(server: NSURL(string: "https://example.com:443/api/login/")!, protocolType: .HTTPS)
+                let keychain = Keychain(server: URL(string: "https://example.com:443/api/login/")!, protocolType: .https)
                     .attributes([String(kSecAttrDescription): "Updated Description"])
 
                 XCTAssertEqual(keychain["kishikawakatsumi"], "1234password", "stored password")
@@ -616,11 +616,11 @@ class KeychainAccessTests: XCTestCase {
                 XCTAssertEqual(keychain["kishikawakatsumi"], "password1234", "updated password")
 
                 let attributes = keychain[attributes: "kishikawakatsumi"]
-                XCTAssertEqual(attributes?.`class`, ItemClass.InternetPassword.rawValue)
-                XCTAssertEqual(attributes?.data, "password1234".dataUsingEncoding(NSUTF8StringEncoding))
+                XCTAssertEqual(attributes?.`class`, ItemClass.internetPassword.rawValue)
+                XCTAssertEqual(attributes?.data, "password1234".data(using: String.Encoding.utf8))
                 XCTAssertNil(attributes?.ref)
                 XCTAssertNotNil(attributes?.persistentRef)
-                XCTAssertEqual(attributes?.accessible, Accessibility.AfterFirstUnlock.rawValue)
+                XCTAssertEqual(attributes?.accessible, Accessibility.afterFirstUnlock.rawValue)
                 if #available(iOS 9.0, *) {
                     XCTAssertNil(attributes?.accessControl)
                 } else {
@@ -642,8 +642,8 @@ class KeychainAccessTests: XCTestCase {
                 XCTAssertNil(attributes?.generic)
                 XCTAssertEqual(attributes?.securityDomain, "securitydomain")
                 XCTAssertEqual(attributes?.server, "example.com")
-                XCTAssertEqual(attributes?.`protocol`, ProtocolType.HTTPS.rawValue)
-                XCTAssertEqual(attributes?.authenticationType, AuthenticationType.Default.rawValue)
+                XCTAssertEqual(attributes?.`protocol`, ProtocolType.https.rawValue)
+                XCTAssertEqual(attributes?.authenticationType, AuthenticationType.defaultType.rawValue)
                 XCTAssertEqual(attributes?.port, 443)
                 XCTAssertEqual(attributes?.path, "")
             }
@@ -750,7 +750,7 @@ class KeychainAccessTests: XCTestCase {
         }
 
         do {
-            let keychain = Keychain(server: NSURL(string: "https://kishikawakatsumi.com")!, protocolType: .HTTPS)
+            let keychain = Keychain(server: URL(string: "https://kishikawakatsumi.com")!, protocolType: .https)
             try keychain.removeAll()
             XCTAssertTrue(true, "no error occurred")
         } catch {
@@ -1006,15 +1006,15 @@ class KeychainAccessTests: XCTestCase {
 
             let allKeys = keychain.allKeys()
             XCTAssertEqual(allKeys.count, 3)
-            XCTAssertEqual(allKeys.sort(), ["key1", "key2", "key3"])
+            XCTAssertEqual(allKeys.sorted(), ["key1", "key2", "key3"])
 
             let allItems = keychain.allItems()
             XCTAssertEqual(allItems.count, 3)
 
-            let sortedItems = allItems.sort { (item1, item2) -> Bool in
+            let sortedItems = allItems.sorted { (item1, item2) -> Bool in
                 let value1 = item1["value"] as! String
                 let value2 = item2["value"] as! String
-                return value1.compare(value2) == NSComparisonResult.OrderedAscending || value1.compare(value2) == NSComparisonResult.OrderedSame
+                return value1.compare(value2) == ComparisonResult.orderedAscending || value1.compare(value2) == ComparisonResult.orderedSame
             }
 
             XCTAssertEqual(sortedItems[0]["accessGroup"] as? String, "")
@@ -1045,25 +1045,25 @@ class KeychainAccessTests: XCTestCase {
             let keychain = Keychain(service: "service1")
             try! keychain
                 .synchronizable(true)
-                .accessibility(.WhenUnlockedThisDeviceOnly)
+                .accessibility(.whenUnlockedThisDeviceOnly)
                 .set("service1_value1", key: "service1_key1")
 
             try! keychain
                 .synchronizable(false)
-                .accessibility(.AfterFirstUnlockThisDeviceOnly)
+                .accessibility(.afterFirstUnlockThisDeviceOnly)
                 .set("service1_value2", key: "service1_key2")
 
             let allKeys = keychain.allKeys()
             XCTAssertEqual(allKeys.count, 2)
-            XCTAssertEqual(allKeys.sort(), ["service1_key1", "service1_key2"])
+            XCTAssertEqual(allKeys.sorted(), ["service1_key1", "service1_key2"])
 
             let allItems = keychain.allItems()
             XCTAssertEqual(allItems.count, 2)
 
-            let sortedItems = allItems.sort { (item1, item2) -> Bool in
+            var sortedItems = allItems.sorted { (item1, item2) -> Bool in
                 let value1 = item1["value"] as! String
                 let value2 = item2["value"] as! String
-                return value1.compare(value2) == NSComparisonResult.OrderedAscending || value1.compare(value2) == NSComparisonResult.OrderedSame
+                return value1.compare(value2) == ComparisonResult.orderedAscending || value1.compare(value2) == ComparisonResult.orderedSame
             }
 
             XCTAssertEqual(sortedItems[0]["accessGroup"] as? String, "")
@@ -1083,28 +1083,28 @@ class KeychainAccessTests: XCTestCase {
             XCTAssertEqual(sortedItems[1]["accessibility"] as? String, "AfterFirstUnlockThisDeviceOnly")
         }
         do {
-            let keychain = Keychain(server: "https://google.com", protocolType: .HTTPS)
+            let keychain = Keychain(server: "https://google.com", protocolType: .https)
             try! keychain
                 .synchronizable(false)
-                .accessibility(.AlwaysThisDeviceOnly)
+                .accessibility(.alwaysThisDeviceOnly)
                 .set("google.com_value1", key: "google.com_key1")
 
             try! keychain
                 .synchronizable(true)
-                .accessibility(.Always)
+                .accessibility(.always)
                 .set("google.com_value2", key: "google.com_key2")
 
             let allKeys = keychain.allKeys()
             XCTAssertEqual(allKeys.count, 2)
-            XCTAssertEqual(allKeys.sort(), ["google.com_key1", "google.com_key2"])
+            XCTAssertEqual(allKeys.sorted(), ["google.com_key1", "google.com_key2"])
 
             let allItems = keychain.allItems()
             XCTAssertEqual(allItems.count, 2)
 
-            let sortedItems = allItems.sort { (item1, item2) -> Bool in
+            let sortedItems = allItems.sorted { (item1, item2) -> Bool in
                 let value1 = item1["value"] as! String
                 let value2 = item2["value"] as! String
-                return value1.compare(value2) == NSComparisonResult.OrderedAscending || value1.compare(value2) == NSComparisonResult.OrderedSame
+                return value1.compare(value2) == ComparisonResult.orderedAscending || value1.compare(value2) == ComparisonResult.orderedSame
             }
 
             XCTAssertEqual(sortedItems[0]["synchronizable"] as? String, "false")
@@ -1126,11 +1126,11 @@ class KeychainAccessTests: XCTestCase {
             XCTAssertEqual(sortedItems[1]["accessibility"] as? String, "Always")
         }
         do {
-            let allKeys = Keychain.allKeys(.GenericPassword)
+            let allKeys = Keychain.allKeys(.genericPassword)
             XCTAssertEqual(allKeys.count, 5)
 
-            let sortedKeys = allKeys.sort { (key1, key2) -> Bool in
-                return key1.1.compare(key2.1) == NSComparisonResult.OrderedAscending || key1.1.compare(key2.1) == NSComparisonResult.OrderedSame
+            let sortedKeys = allKeys.sorted { (key1, key2) -> Bool in
+                return key1.1.compare(key2.1) == ComparisonResult.orderedAscending || key1.1.compare(key2.1) == ComparisonResult.orderedSame
             }
             XCTAssertEqual(sortedKeys[0].0, "")
             XCTAssertEqual(sortedKeys[0].1, "key1")
@@ -1144,11 +1144,11 @@ class KeychainAccessTests: XCTestCase {
             XCTAssertEqual(sortedKeys[4].1, "service1_key2")
         }
         do {
-            let allKeys = Keychain.allKeys(.InternetPassword)
+            let allKeys = Keychain.allKeys(.internetPassword)
             XCTAssertEqual(allKeys.count, 2)
 
-            let sortedKeys = allKeys.sort { (key1, key2) -> Bool in
-                return key1.1.compare(key2.1) == NSComparisonResult.OrderedAscending || key1.1.compare(key2.1) == NSComparisonResult.OrderedSame
+            let sortedKeys = allKeys.sorted { (key1, key2) -> Bool in
+                return key1.1.compare(key2.1) == ComparisonResult.orderedAscending || key1.1.compare(key2.1) == ComparisonResult.orderedSame
             }
             XCTAssertEqual(sortedKeys[0].0, "google.com")
             XCTAssertEqual(sortedKeys[0].1, "google.com_key1")
@@ -1178,7 +1178,7 @@ class KeychainAccessTests: XCTestCase {
             let accessibility: KeychainAccess.Accessibility = .whenPasscodeSetThisDeviceOnly
 
             let policy: AuthenticationPolicy = [.UserPresence]
-            let flags = SecAccessControlCreateFlags(rawValue: policy.rawValue)
+            let flags = SecAccessControlCreateFlags(rawValue: CFOptionFlags(policy.rawValue))
 
             var error: Unmanaged<CFError>?
             let accessControl = SecAccessControlCreateWithFlags(kCFAllocatorDefault, accessibility.rawValue, flags, &error)
@@ -1188,10 +1188,10 @@ class KeychainAccessTests: XCTestCase {
         }
         #if os(iOS)
         do {
-            let accessibility: Accessibility = .WhenPasscodeSetThisDeviceOnly
+            let accessibility: Accessibility = .whenPasscodeSetThisDeviceOnly
 
             let policy: AuthenticationPolicy = [.UserPresence, .ApplicationPassword]
-            let flags = SecAccessControlCreateFlags(rawValue: policy.rawValue)
+            let flags = SecAccessControlCreateFlags(rawValue: CFOptionFlags(policy.rawValue))
 
             var error: Unmanaged<CFError>?
             let accessControl = SecAccessControlCreateWithFlags(kCFAllocatorDefault, accessibility.rawValue, flags, &error)
@@ -1200,10 +1200,10 @@ class KeychainAccessTests: XCTestCase {
             XCTAssertNotNil(accessControl)
         }
         do {
-            let accessibility: Accessibility = .WhenPasscodeSetThisDeviceOnly
+            let accessibility: Accessibility = .whenPasscodeSetThisDeviceOnly
 
             let policy: AuthenticationPolicy = [.UserPresence, .ApplicationPassword, .PrivateKeyUsage]
-            let flags = SecAccessControlCreateFlags(rawValue: policy.rawValue)
+            let flags = SecAccessControlCreateFlags(rawValue: CFOptionFlags(policy.rawValue))
 
             var error: Unmanaged<CFError>?
             let accessControl = SecAccessControlCreateWithFlags(kCFAllocatorDefault, accessibility.rawValue, flags, &error)
@@ -1212,10 +1212,10 @@ class KeychainAccessTests: XCTestCase {
             XCTAssertNotNil(accessControl)
         }
         do {
-            let accessibility: Accessibility = .WhenPasscodeSetThisDeviceOnly
+            let accessibility: Accessibility = .whenPasscodeSetThisDeviceOnly
 
             let policy: AuthenticationPolicy = [.ApplicationPassword]
-            let flags = SecAccessControlCreateFlags(rawValue: policy.rawValue)
+            let flags = SecAccessControlCreateFlags(rawValue: CFOptionFlags(policy.rawValue))
 
             var error: Unmanaged<CFError>?
             let accessControl = SecAccessControlCreateWithFlags(kCFAllocatorDefault, accessibility.rawValue, flags, &error)
@@ -1224,10 +1224,10 @@ class KeychainAccessTests: XCTestCase {
             XCTAssertNotNil(accessControl)
         }
         do {
-            let accessibility: Accessibility = .WhenPasscodeSetThisDeviceOnly
+            let accessibility: Accessibility = .whenPasscodeSetThisDeviceOnly
 
             let policy: AuthenticationPolicy = [.ApplicationPassword, .PrivateKeyUsage]
-            let flags = SecAccessControlCreateFlags(rawValue: policy.rawValue)
+            let flags = SecAccessControlCreateFlags(rawValue: CFOptionFlags(policy.rawValue))
 
             var error: Unmanaged<CFError>?
             let accessControl = SecAccessControlCreateWithFlags(kCFAllocatorDefault, accessibility.rawValue, flags, &error)
@@ -1236,10 +1236,10 @@ class KeychainAccessTests: XCTestCase {
             XCTAssertNotNil(accessControl)
         }
         do {
-            let accessibility: Accessibility = .WhenPasscodeSetThisDeviceOnly
+            let accessibility: Accessibility = .whenPasscodeSetThisDeviceOnly
 
             let policy: AuthenticationPolicy = [.PrivateKeyUsage]
-            let flags = SecAccessControlCreateFlags(rawValue: policy.rawValue)
+            let flags = SecAccessControlCreateFlags(rawValue: CFOptionFlags(policy.rawValue))
 
             var error: Unmanaged<CFError>?
             let accessControl = SecAccessControlCreateWithFlags(kCFAllocatorDefault, accessibility.rawValue, flags, &error)
@@ -1248,10 +1248,10 @@ class KeychainAccessTests: XCTestCase {
             XCTAssertNotNil(accessControl)
         }
         do {
-            let accessibility: Accessibility = .WhenPasscodeSetThisDeviceOnly
+            let accessibility: Accessibility = .whenPasscodeSetThisDeviceOnly
 
             let policy: AuthenticationPolicy = [.TouchIDAny]
-            let flags = SecAccessControlCreateFlags(rawValue: policy.rawValue)
+            let flags = SecAccessControlCreateFlags(rawValue: CFOptionFlags(policy.rawValue))
 
             var error: Unmanaged<CFError>?
             let accessControl = SecAccessControlCreateWithFlags(kCFAllocatorDefault, accessibility.rawValue, flags, &error)
@@ -1260,10 +1260,10 @@ class KeychainAccessTests: XCTestCase {
             XCTAssertNotNil(accessControl)
         }
         do {
-            let accessibility: Accessibility = .WhenPasscodeSetThisDeviceOnly
+            let accessibility: Accessibility = .whenPasscodeSetThisDeviceOnly
 
             let policy: AuthenticationPolicy = [.TouchIDAny, .DevicePasscode]
-            let flags = SecAccessControlCreateFlags(rawValue: policy.rawValue)
+            let flags = SecAccessControlCreateFlags(rawValue: CFOptionFlags(policy.rawValue))
 
             var error: Unmanaged<CFError>?
             let accessControl = SecAccessControlCreateWithFlags(kCFAllocatorDefault, accessibility.rawValue, flags, &error)
@@ -1272,10 +1272,10 @@ class KeychainAccessTests: XCTestCase {
             XCTAssertNotNil(accessControl)
         }
         do {
-            let accessibility: Accessibility = .WhenPasscodeSetThisDeviceOnly
+            let accessibility: Accessibility = .whenPasscodeSetThisDeviceOnly
 
             let policy: AuthenticationPolicy = [.TouchIDAny, .ApplicationPassword]
-            let flags = SecAccessControlCreateFlags(rawValue: policy.rawValue)
+            let flags = SecAccessControlCreateFlags(rawValue: CFOptionFlags(policy.rawValue))
 
             var error: Unmanaged<CFError>?
             let accessControl = SecAccessControlCreateWithFlags(kCFAllocatorDefault, accessibility.rawValue, flags, &error)
@@ -1284,10 +1284,10 @@ class KeychainAccessTests: XCTestCase {
             XCTAssertNotNil(accessControl)
         }
         do {
-            let accessibility: Accessibility = .WhenPasscodeSetThisDeviceOnly
+            let accessibility: Accessibility = .whenPasscodeSetThisDeviceOnly
 
             let policy: AuthenticationPolicy = [.TouchIDAny, .ApplicationPassword, .PrivateKeyUsage]
-            let flags = SecAccessControlCreateFlags(rawValue: policy.rawValue)
+            let flags = SecAccessControlCreateFlags(rawValue: CFOptionFlags(policy.rawValue))
 
             var error: Unmanaged<CFError>?
             let accessControl = SecAccessControlCreateWithFlags(kCFAllocatorDefault, accessibility.rawValue, flags, &error)
@@ -1296,10 +1296,10 @@ class KeychainAccessTests: XCTestCase {
             XCTAssertNotNil(accessControl)
         }
         do {
-            let accessibility: Accessibility = .WhenPasscodeSetThisDeviceOnly
+            let accessibility: Accessibility = .whenPasscodeSetThisDeviceOnly
 
             let policy: AuthenticationPolicy = [.TouchIDCurrentSet]
-            let flags = SecAccessControlCreateFlags(rawValue: policy.rawValue)
+            let flags = SecAccessControlCreateFlags(rawValue: CFOptionFlags(policy.rawValue))
 
             var error: Unmanaged<CFError>?
             let accessControl = SecAccessControlCreateWithFlags(kCFAllocatorDefault, accessibility.rawValue, flags, &error)
@@ -1308,10 +1308,10 @@ class KeychainAccessTests: XCTestCase {
             XCTAssertNotNil(accessControl)
         }
         do {
-            let accessibility: Accessibility = .WhenPasscodeSetThisDeviceOnly
+            let accessibility: Accessibility = .whenPasscodeSetThisDeviceOnly
 
             let policy: AuthenticationPolicy = [.TouchIDCurrentSet, .DevicePasscode]
-            let flags = SecAccessControlCreateFlags(rawValue: policy.rawValue)
+            let flags = SecAccessControlCreateFlags(rawValue: CFOptionFlags(policy.rawValue))
 
             var error: Unmanaged<CFError>?
             let accessControl = SecAccessControlCreateWithFlags(kCFAllocatorDefault, accessibility.rawValue, flags, &error)
@@ -1320,10 +1320,10 @@ class KeychainAccessTests: XCTestCase {
             XCTAssertNotNil(accessControl)
         }
         do {
-            let accessibility: Accessibility = .WhenPasscodeSetThisDeviceOnly
+            let accessibility: Accessibility = .whenPasscodeSetThisDeviceOnly
 
             let policy: AuthenticationPolicy = [.TouchIDCurrentSet, .ApplicationPassword]
-            let flags = SecAccessControlCreateFlags(rawValue: policy.rawValue)
+            let flags = SecAccessControlCreateFlags(rawValue: CFOptionFlags(policy.rawValue))
 
             var error: Unmanaged<CFError>?
             let accessControl = SecAccessControlCreateWithFlags(kCFAllocatorDefault, accessibility.rawValue, flags, &error)
@@ -1332,10 +1332,10 @@ class KeychainAccessTests: XCTestCase {
             XCTAssertNotNil(accessControl)
         }
         do {
-            let accessibility: Accessibility = .WhenPasscodeSetThisDeviceOnly
+            let accessibility: Accessibility = .whenPasscodeSetThisDeviceOnly
 
             let policy: AuthenticationPolicy = [.TouchIDCurrentSet, .ApplicationPassword, .PrivateKeyUsage]
-            let flags = SecAccessControlCreateFlags(rawValue: policy.rawValue)
+            let flags = SecAccessControlCreateFlags(rawValue: CFOptionFlags(policy.rawValue))
 
             var error: Unmanaged<CFError>?
             let accessControl = SecAccessControlCreateWithFlags(kCFAllocatorDefault, accessibility.rawValue, flags, &error)
@@ -1344,10 +1344,10 @@ class KeychainAccessTests: XCTestCase {
             XCTAssertNotNil(accessControl)
         }
         do {
-            let accessibility: Accessibility = .WhenPasscodeSetThisDeviceOnly
+            let accessibility: Accessibility = .whenPasscodeSetThisDeviceOnly
             
             let policy: AuthenticationPolicy = [.TouchIDAny, .Or, .DevicePasscode]
-            let flags = SecAccessControlCreateFlags(rawValue: policy.rawValue)
+            let flags = SecAccessControlCreateFlags(rawValue: CFOptionFlags(policy.rawValue))
             
             var error: Unmanaged<CFError>?
             let accessControl = SecAccessControlCreateWithFlags(kCFAllocatorDefault, accessibility.rawValue, flags, &error)
@@ -1356,10 +1356,10 @@ class KeychainAccessTests: XCTestCase {
             XCTAssertNotNil(accessControl)
         }
         do {
-            let accessibility: Accessibility = .WhenPasscodeSetThisDeviceOnly
+            let accessibility: Accessibility = .whenPasscodeSetThisDeviceOnly
             
             let policy: AuthenticationPolicy = [.TouchIDAny, .And, .DevicePasscode]
-            let flags = SecAccessControlCreateFlags(rawValue: policy.rawValue)
+            let flags = SecAccessControlCreateFlags(rawValue: CFOptionFlags(policy.rawValue))
             
             var error: Unmanaged<CFError>?
             let accessControl = SecAccessControlCreateWithFlags(kCFAllocatorDefault, accessibility.rawValue, flags, &error)

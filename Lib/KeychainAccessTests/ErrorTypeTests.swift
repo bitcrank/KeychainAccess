@@ -45,7 +45,7 @@ class ErrorTypeTests: XCTestCase {
         #if os(iOS)
         do {
             let status = Status(rawValue: errSecOpWr)
-            XCTAssertEqual(status, .OpWr)
+            XCTAssertEqual(status, .opWr)
             XCTAssertEqual(status?.description, "file already open with with write permission")
         }
         #endif
@@ -345,7 +345,7 @@ class ErrorTypeTests: XCTestCase {
         do {
             let errSecInternal: OSStatus = -26276
             let status = Status(rawValue: errSecInternal)
-            XCTAssertEqual(status, .internal)
+            XCTAssertEqual(status, .internalIssue)
             XCTAssertEqual(status?.description, "An internal error occurred in the Security framework.")
         }
         #if os(OSX)

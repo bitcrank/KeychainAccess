@@ -58,7 +58,7 @@ public enum AuthenticationType {
     case httpBasic
     case httpDigest
     case htmlForm
-    case `default`
+    case defaultType
 }
 
 public enum Accessibility {
@@ -398,11 +398,11 @@ public class Keychain {
         self.init(options)
     }
     
-    public convenience init(server: String, protocolType: ProtocolType, authenticationType: AuthenticationType = .default) {
+    public convenience init(server: String, protocolType: ProtocolType, authenticationType: AuthenticationType = .defaultType) {
         self.init(server: URL(string: server)!, protocolType: protocolType, authenticationType: authenticationType)
     }
     
-    public convenience init(server: URL, protocolType: ProtocolType, authenticationType: AuthenticationType = .default) {
+    public convenience init(server: URL, protocolType: ProtocolType, authenticationType: AuthenticationType = .defaultType) {
         var options = Options()
         options.itemClass = .internetPassword
         options.server = server
@@ -1020,7 +1020,7 @@ struct Options {
     
     var server: URL!
     var protocolType: ProtocolType!
-    var authenticationType: AuthenticationType = .default
+    var authenticationType: AuthenticationType = .defaultType
     
     var accessibility: Accessibility = .afterFirstUnlock
     var authenticationPolicy: AuthenticationPolicy?
@@ -1482,7 +1482,7 @@ extension AuthenticationType : RawRepresentable, CustomStringConvertible {
         case String(kSecAttrAuthenticationTypeHTMLForm):
             self = htmlForm
         case String(kSecAttrAuthenticationTypeDefault):
-            self = `default`
+            self = defaultType
         default:
             return nil
         }

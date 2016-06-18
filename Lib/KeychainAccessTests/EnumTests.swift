@@ -240,7 +240,7 @@ class EnumTests: XCTestCase {
         }
         do {
             let authenticationType = AuthenticationType(rawValue: kSecAttrAuthenticationTypeDefault as String)
-            XCTAssertEqual(authenticationType, .default)
+            XCTAssertEqual(authenticationType, .defaultType)
             XCTAssertEqual(authenticationType?.description, "Default")
         }
     }
