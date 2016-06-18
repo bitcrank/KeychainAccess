@@ -19,8 +19,8 @@ class KeychainAccessTests: XCTestCase {
         do { try Keychain(service: "Twitter", accessGroup: "12ABCD3E4F.shared").removeAll() } catch {}
         do { try Keychain(service: "Twitter").removeAll() } catch {}
         
-        do { try Keychain(server: NSURL(string: "https://example.com")!, protocolType: .HTTPS).removeAll() } catch {}
-        do { try Keychain(server: NSURL(string: "https://example.com:443")!, protocolType: .HTTPS).removeAll() } catch {}
+        do { try Keychain(server: URL(string: "https://example.com")!, protocolType: .https).removeAll() } catch {}
+        do { try Keychain(server: URL(string: "https://example.com:443")!, protocolType: .https).removeAll() } catch {}
         
         do { try Keychain().removeAll() } catch {}
     }
@@ -118,7 +118,7 @@ class KeychainAccessTests: XCTestCase {
     func testInternetPassword() {
         do {
             // Add Keychain items
-            let keychain = Keychain(server: NSURL(string: "https://kishikawakatsumi.com")!, protocolType: .HTTPS)
+            let keychain = Keychain(server: URL(string: "https://kishikawakatsumi.com")!, protocolType: .https)
             
             do { try keychain.set("kishikawa_katsumi", key: "username") } catch {}
             do { try keychain.set("password_1234", key: "password") } catch {}
@@ -132,7 +132,7 @@ class KeychainAccessTests: XCTestCase {
         
         do {
             // Update Keychain items
-            let keychain = Keychain(server: NSURL(string: "https://kishikawakatsumi.com")!, protocolType: .HTTPS)
+            let keychain = Keychain(server: URL(string: "https://kishikawakatsumi.com")!, protocolType: .https)
             
             do { try keychain.set("katsumi_kishikawa", key: "username") } catch {}
             do { try keychain.set("1234_password", key: "password") } catch {}
@@ -146,7 +146,7 @@ class KeychainAccessTests: XCTestCase {
         
         do {
             // Remove Keychain items
-            let keychain = Keychain(server: NSURL(string: "https://kishikawakatsumi.com")!, protocolType: .HTTPS)
+            let keychain = Keychain(server: URL(string: "https://kishikawakatsumi.com")!, protocolType: .https)
             
             do { try keychain.remove("username") } catch {}
             do { try keychain.remove("password") } catch {}
@@ -159,7 +159,7 @@ class KeychainAccessTests: XCTestCase {
     func testInternetPasswordSubscripting() {
         do {
             // Add Keychain items
-            let keychain = Keychain(server: NSURL(string: "https://kishikawakatsumi.com")!, protocolType: .HTTPS)
+            let keychain = Keychain(server: URL(string: "https://kishikawakatsumi.com")!, protocolType: .https)
             
             keychain["username"] = "kishikawa_katsumi"
             keychain["password"] = "password_1234"
@@ -173,7 +173,7 @@ class KeychainAccessTests: XCTestCase {
         
         do {
             // Update Keychain items
-            let keychain = Keychain(server: NSURL(string: "https://kishikawakatsumi.com")!, protocolType: .HTTPS)
+            let keychain = Keychain(server: URL(string: "https://kishikawakatsumi.com")!, protocolType: .https)
             
             keychain["username"] = "katsumi_kishikawa"
             keychain["password"] = "1234_password"
@@ -187,7 +187,7 @@ class KeychainAccessTests: XCTestCase {
         
         do {
             // Remove Keychain items
-            let keychain = Keychain(server: NSURL(string: "https://kishikawakatsumi.com")!, protocolType: .HTTPS)
+            let keychain = Keychain(server: URL(string: "https://kishikawakatsumi.com")!, protocolType: .https)
             
             keychain["username"] = nil
             keychain["password"] = nil
@@ -225,37 +225,37 @@ class KeychainAccessTests: XCTestCase {
     
     func testInitializerWithServer() {
         let server = "https://kishikawakatsumi.com"
-        let URL = NSURL(string: server)!
+        let URL = Foundation.URL(string: server)!
 
         do {
-            let keychain = Keychain(server: server, protocolType: .HTTPS)
+            let keychain = Keychain(server: server, protocolType: .https)
             XCTAssertEqual(keychain.server, URL)
-            XCTAssertEqual(keychain.protocolType, ProtocolType.HTTPS)
-            XCTAssertEqual(keychain.authenticationType, AuthenticationType.Default)
+            XCTAssertEqual(keychain.protocolType, ProtocolType.https)
+            XCTAssertEqual(keychain.authenticationType, AuthenticationType.default)
         }
         do {
-            let keychain = Keychain(server: URL, protocolType: .HTTPS)
+            let keychain = Keychain(server: URL, protocolType: .https)
             XCTAssertEqual(keychain.server, URL)
-            XCTAssertEqual(keychain.protocolType, ProtocolType.HTTPS)
-            XCTAssertEqual(keychain.authenticationType, AuthenticationType.Default)
+            XCTAssertEqual(keychain.protocolType, ProtocolType.https)
+            XCTAssertEqual(keychain.authenticationType, AuthenticationType.default)
         }
     }
     
     func testInitializerWithServerAndAuthenticationType() {
         let server = "https://kishikawakatsumi.com"
-        let URL = NSURL(string: server)!
+        let URL = Foundation.URL(string: server)!
 
         do {
-            let keychain = Keychain(server: server, protocolType: .HTTPS, authenticationType: .HTMLForm)
+            let keychain = Keychain(server: server, protocolType: .https, authenticationType: .htmlForm)
             XCTAssertEqual(keychain.server, URL)
-            XCTAssertEqual(keychain.protocolType, ProtocolType.HTTPS)
-            XCTAssertEqual(keychain.authenticationType, AuthenticationType.HTMLForm)
+            XCTAssertEqual(keychain.protocolType, ProtocolType.https)
+            XCTAssertEqual(keychain.authenticationType, AuthenticationType.htmlForm)
         }
         do {
-            let keychain = Keychain(server: URL, protocolType: .HTTPS, authenticationType: .HTMLForm)
+            let keychain = Keychain(server: URL, protocolType: .https, authenticationType: .htmlForm)
             XCTAssertEqual(keychain.server, URL)
-            XCTAssertEqual(keychain.protocolType, ProtocolType.HTTPS)
-            XCTAssertEqual(keychain.authenticationType, AuthenticationType.HTMLForm)
+            XCTAssertEqual(keychain.protocolType, ProtocolType.https)
+            XCTAssertEqual(keychain.authenticationType, AuthenticationType.htmlForm)
         }
     }
     
@@ -390,7 +390,7 @@ class KeychainAccessTests: XCTestCase {
     
     func testSetData() {
         let JSONObject = ["username": "kishikawakatsumi", "password": "password1234"]
-        let JSONData = try! NSJSONSerialization.dataWithJSONObject(JSONObject, options: [])
+        let JSONData = try! JSONSerialization.data(withJSONObject: JSONObject, options: [])
         
         let keychain = Keychain(service: "Twitter")
         
@@ -412,7 +412,7 @@ class KeychainAccessTests: XCTestCase {
             let _ = try keychain.getString("RandomData")
         } catch let error as NSError {
             XCTAssertEqual(error.domain, KeychainAccessErrorDomain)
-            XCTAssertEqual(error.code, Int(Status.ConversionError.rawValue))
+            XCTAssertEqual(error.code, Int(Status.conversionError.rawValue))
         }
     }
 
@@ -674,7 +674,7 @@ class KeychainAccessTests: XCTestCase {
     
     func testRemoveData() {
         let JSONObject = ["username": "kishikawakatsumi", "password": "password1234"]
-        let JSONData = try! NSJSONSerialization.dataWithJSONObject(JSONObject, options: [])
+        let JSONData = try! JSONSerialization.data(withJSONObject: JSONObject, options: [])
         
         let keychain = Keychain(service: "Twitter")
         
@@ -718,7 +718,7 @@ class KeychainAccessTests: XCTestCase {
         XCTAssertNil(keychain[string: "password"], "removed password")
 
         let JSONObject = ["username": "kishikawakatsumi", "password": "password1234"]
-        let JSONData = try! NSJSONSerialization.dataWithJSONObject(JSONObject, options: [])
+        let JSONData = try! JSONSerialization.data(withJSONObject: JSONObject, options: [])
 
         XCTAssertNil(keychain[data:"JSONData"], "not stored JSON data")
 
@@ -984,9 +984,9 @@ class KeychainAccessTests: XCTestCase {
         XCTAssertEqual(keychain.synchronizable, false)
         XCTAssertEqual(keychain.synchronizable(true).synchronizable, true)
         XCTAssertEqual(keychain.synchronizable(false).synchronizable, false)
-        XCTAssertEqual(keychain.accessibility(.AfterFirstUnlock).accessibility, Accessibility.AfterFirstUnlock)
-        XCTAssertEqual(keychain.accessibility(.WhenPasscodeSetThisDeviceOnly, authenticationPolicy: .UserPresence).accessibility, Accessibility.WhenPasscodeSetThisDeviceOnly)
-        XCTAssertEqual(keychain.accessibility(.WhenPasscodeSetThisDeviceOnly, authenticationPolicy: .UserPresence).authenticationPolicy, AuthenticationPolicy.UserPresence)
+        XCTAssertEqual(keychain.accessibility(.afterFirstUnlock).accessibility, KeychainAccess.Accessibility.afterFirstUnlock)
+        XCTAssertEqual(keychain.accessibility(.whenPasscodeSetThisDeviceOnly, authenticationPolicy: .UserPresence).accessibility, KeychainAccess.Accessibility.whenPasscodeSetThisDeviceOnly)
+        XCTAssertEqual(keychain.accessibility(.whenPasscodeSetThisDeviceOnly, authenticationPolicy: .UserPresence).authenticationPolicy, AuthenticationPolicy.UserPresence)
         XCTAssertNil(keychain.label)
         XCTAssertEqual(keychain.label("Label").label, "Label")
         XCTAssertNil(keychain.comment)
@@ -1175,7 +1175,7 @@ class KeychainAccessTests: XCTestCase {
         }
 
         do {
-            let accessibility: Accessibility = .WhenPasscodeSetThisDeviceOnly
+            let accessibility: KeychainAccess.Accessibility = .whenPasscodeSetThisDeviceOnly
 
             let policy: AuthenticationPolicy = [.UserPresence]
             let flags = SecAccessControlCreateFlags(rawValue: policy.rawValue)
@@ -1370,7 +1370,7 @@ class KeychainAccessTests: XCTestCase {
         #endif
         #if os(OSX)
         do {
-            let accessibility: Accessibility = .WhenPasscodeSetThisDeviceOnly
+            let accessibility: KeychainAccess.Accessibility = .whenPasscodeSetThisDeviceOnly
 
             let policy: AuthenticationPolicy = [.UserPresence]
             let flags = SecAccessControlCreateFlags(rawValue: policy.rawValue)
@@ -1382,7 +1382,7 @@ class KeychainAccessTests: XCTestCase {
             XCTAssertNotNil(accessControl)
         }
         do {
-            let accessibility: Accessibility = .WhenPasscodeSetThisDeviceOnly
+            let accessibility: KeychainAccess.Accessibility = .whenPasscodeSetThisDeviceOnly
 
             let policy: AuthenticationPolicy = [.DevicePasscode]
             let flags = SecAccessControlCreateFlags(rawValue: policy.rawValue)
