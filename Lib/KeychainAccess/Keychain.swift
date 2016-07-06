@@ -370,7 +370,7 @@ public class Keychain {
     
     public convenience init() {
         var options = Options()
-        if let bundleIdentifier = Bundle.main().bundleIdentifier {
+        if let bundleIdentifier = Bundle.main.bundleIdentifier {
             options.service = bundleIdentifier
         }
         self.init(options)
@@ -384,7 +384,7 @@ public class Keychain {
     
     public convenience init(accessGroup: String) {
         var options = Options()
-        if let bundleIdentifier = Bundle.main().bundleIdentifier {
+        if let bundleIdentifier = Bundle.main.bundleIdentifier {
             options.service = bundleIdentifier
         }
         options.accessGroup = accessGroup
